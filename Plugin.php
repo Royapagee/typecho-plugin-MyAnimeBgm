@@ -16,14 +16,12 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 }
 
 /**
- * 通过 Bangumi API 拉取指定用户的追番（收藏）列表，把番剧名称、追番状态、
- * 观看进度、评分、封面等信息写入数据库，并注册一个独立页面用于像照片墙
- * 一样展示这些番剧。
+ * 通过 Bangumi API 拉取指定用户的追番（收藏）列表，并注册一个独立页面用于像照片墙一样展示这些番剧。
  *
  * @package MyAnimeBgm
  * @author 罗伊
  * @version 1.1.0
- * @link https://github.com/Royapagee
+ * @link https://blog.roysgensokyo.space/technology/493.html
  */
 final class Plugin implements PluginInterface
 {
