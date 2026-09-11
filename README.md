@@ -37,7 +37,7 @@
 | 设置项 | 默认值 | 说明 |
 | --- | --- | --- |
 | Bangumi API 地址 | `https://api.bgm.tv` | 也可填自建反代地址 |
-| 用户 ID | `sai` | Bangumi 用户名，**只接受用户名，不接受数字 UID** |
+| 用户 ID | `sai` | Bangumi 用户名，或数字 UID |
 | Access Token | 空 | 收藏私密时才需要 |
 | 收藏分类 | 动画 | 对应 API 的 `subject_type` |
 | 缓存数据库类型 | 数据库 | 数据库写入 Typecho 数据表，文件则写入 `cache/` 下的 JSON |
