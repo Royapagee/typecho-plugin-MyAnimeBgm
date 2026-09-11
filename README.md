@@ -1,4 +1,4 @@
-# MyAnimeBgm
+# MyAnimeBgm——像展示照片一样展示你的追番！
 
 把 [Bangumi](https://bgm.tv) 的追番收藏同步到 Typecho，在前台生成一面番剧墙的插件。
 
