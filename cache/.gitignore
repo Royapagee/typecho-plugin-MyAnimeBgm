@@ -1,0 +1,5 @@
+# 运行时生成的缓存不纳入版本管理
+*
+!.gitignore
+!index.html
+!.htaccess

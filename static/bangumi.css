@@ -1,0 +1,382 @@
+/**
+ * MyAnimeBgm 前台番剧照片墙样式。
+ *
+ * 所有类名统一使用 bgm- 前缀，避免与主题样式冲突。
+ *
+ * 配色分两档，由 .bgm-page 上的 data-bgm-theme 属性决定（值来自 Theme::flavor()）：
+ *
+ *  - default：基础档，任何主题都能用。色值引用 Bootstrap 的 --bs-* 变量并带回退值，
+ *    主题重新定义过就跟随主题，没定义就用 Bootstrap 默认值，再没有就用插件自带色值。
+ *  - jasmine：站点启用 Jasmine 主题时改读它自己的私有 CSS 变量，完全融进主题色板。
+ *
+ * 深浅色切换统一由 Bootstrap 的 data-bs-theme 负责，插件不自己维护暗色覆盖。
+ */
+
+.bgm-page {
+    --bgm-gap: 14px;
+    --bgm-radius: 12px;
+    --bgm-surface: var(--bs-body-bg, #fff);
+    --bgm-surface-2: var(--bs-tertiary-bg, #f8f9fa);
+    --bgm-border: var(--bs-border-color, rgba(0, 0, 0, .08));
+    --bgm-text: var(--bs-body-color, #212529);
+    --bgm-muted: var(--bs-secondary-color, #6c757d);
+    --bgm-accent: var(--bs-primary, #e4006e);
+    /* 压在强调色上的文字色：取页面背景色，正好与主色互为明暗反色 */
+    --bgm-on-accent: var(--bs-body-bg, #fff);
+
+    color: var(--bgm-text);
+}
+
+/*
+ * Jasmine 档：改读 Jasmine 自己的 CSS 变量，番剧墙完全融进主题色板。
+ *
+ * 这几个变量名（--primary-color-rgba / --link-color-rgba /
+ * --link-color-second-rgba / --bg-auto-rgb）是 Jasmine 独有的，其它主题不会定义，
+ * 所以哪怕上面的判定出错，每个 var() 的第二参数也能兜住，不会出现无色。
+ * 深浅色由 Jasmine 写在 <body data-bs-theme> 上的值切换，这里不用再管。
+ *
+ * 卡片遮罩里的白色文字不在此列——那些压在照片上，必须与主题无关。
+ */
+.bgm-page[data-bgm-theme="jasmine"] {
+    --bgm-surface: var(--bs-body-bg, #fff);
+    /* 输入框底色取"页面底色"：亮色下比卡片略深一档的暖粉，暗色下是略深的暖黑 */
+    --bgm-surface-2: rgb(var(--bg-auto-rgb, 253, 237, 235));
+    --bgm-text: rgba(var(--link-color-rgba, 44, 36, 35, 1));
+    --bgm-muted: rgba(var(--link-color-second-rgba, 44, 36, 35, .65));
+    /* 前一行给不支持 color-mix() 的浏览器；后一行才是想要的暖色细线 */
+    --bgm-border: var(--bs-border-color, rgba(0, 0, 0, .08));
+    --bgm-border: color-mix(in srgb, rgba(var(--link-color-rgba, 44, 36, 35, 1)) 14%, transparent);
+    --bgm-accent: rgb(var(--primary-color-rgba, 168, 91, 110));
+    --bgm-on-accent: var(--bs-body-bg, #fff);
+}
+
+/*
+ * 主题里有一条无作用域的 `a` / `a:hover` 规则（main.css 的 54-63 行），
+ * 特异性 (0,1,1)，会把 .bgm-card 上的白色文字改成主题主色，正好和遮罩
+ * 淡入的时机重合，导致番剧名永远不是白色。这里统一在 .bgm-page 下抬高
+ * 特异性（(0,2,1)）盖回去。
+ */
+.bgm-page a,
+.bgm-page a:hover,
+.bgm-page a:focus,
+.bgm-page a:focus-visible {
+    color: #fff;
+}
+
+/* hidden 属性优先于组件自身的 display，避免筛选时藏不住卡片 */
+.bgm-page [hidden] {
+    display: none !important;
+}
+
+/*
+ * 主题是单栏（没有左侧栏）或主题外壳是兜底的时候，番剧墙自己撑开一个容器。
+ * 用的是插件自带色值，不依赖任何主题或 Bootstrap 的类。
+ */
+.bgm-container {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+/*
+ * 外层结构的排布不交给主题。
+ *
+ * template/bangumi.php 里同时挂着 Bootstrap 的 d-flex / flex-column，Jasmine 这类
+ * 自带完整 Bootstrap 的主题能正常纵向铺开；但有的主题只带了一部分工具类
+ * （classic-22 就只有一条 .d-flex{display:flex}，没有 .flex-column），
+ * `d-flex flex-column` 于是变成横向排列，标题会跑到番剧墙旁边。
+ * 这里用插件自己的类把方向钉死，色值/间距与 Bootstrap 的 row-gap-3 / row-gap-1 对齐，
+ * 所以 Jasmine 下的观感不变。
+ */
+.bgm-stack {
+    display: flex;
+    flex-direction: column;
+    row-gap: 1rem;
+}
+
+/*
+ * 这一档同时挂在外层 .d-flex 的行容器里，是它的唯一子项。
+ * Bootstrap 的 .card-body 自带 flex: 1 1 auto 所以能撑满，主题没有 Bootstrap 时
+ * 就退回 flex: 0 1 auto，整块会缩成内容宽度（实测 1100px 的容器里只占 434px）。
+ * 这里补上，和 Bootstrap 下取值一致。
+ */
+.bgm-stack-tight {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    justify-content: space-between;
+    row-gap: .25rem;
+    overflow: hidden;
+}
+
+
+/* ---------- 头部 ---------- */
+
+.bgm-title {
+    margin: 0 0 .5rem;
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+/* 筛选标签与搜索框共用一行：标签靠左，搜索框靠右 */
+.bgm-filter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem .75rem;
+    margin-bottom: 1.25rem;
+}
+
+.bgm-meta {
+    margin-bottom: .75rem;
+    color: var(--bgm-muted);
+    font-size: .8rem;
+}
+
+.bgm-search {
+    padding: .4rem .85rem;
+    border: 1px solid var(--bgm-border);
+    border-radius: 999px;
+    background: var(--bgm-surface-2);
+    color: inherit;
+    font-size: .875rem;
+}
+
+/*
+ * 主题给 input 写死宽度是常见做法——classic-22 用的 Pico 就是
+ * input:not([type=checkbox],[type=radio]),select,textarea{width:100%}，
+ * 那条规则的特异性 (0,1,1) 比单个 .bgm-search (0,1,0) 高，会把搜索框撑满一行、
+ * 把筛选标签挤到上一行。这里用 .bgm-page 抬高特异性，把搜索框钉回固定宽度。
+ */
+.bgm-page .bgm-search {
+    flex: 0 0 auto;
+    width: 220px;
+}
+
+.bgm-search:focus {
+    outline: none;
+    border-color: var(--bgm-accent);
+}
+
+.bgm-note {
+    margin: 1.25rem 0 0;
+    color: var(--bgm-muted);
+    font-size: .78rem;
+    text-align: center;
+}
+
+/* ---------- 状态筛选 ---------- */
+
+.bgm-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    /* 下边距由 .bgm-filter 统一控制 */
+    margin-bottom: 0;
+}
+
+.bgm-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .3rem .85rem;
+    border: 1px solid var(--bgm-border);
+    border-radius: 999px;
+    background: var(--bgm-surface);
+    color: var(--bgm-text);
+    font-size: .85rem;
+    line-height: 1.5;
+    cursor: pointer;
+    transition: all .2s ease;
+}
+
+.bgm-tab:hover {
+    border-color: var(--bgm-accent);
+    color: var(--bgm-accent);
+}
+
+.bgm-tab.is-active {
+    background: var(--bgm-accent);
+    border-color: var(--bgm-accent);
+    color: var(--bgm-on-accent);
+}
+
+.bgm-count {
+    opacity: .7;
+    font-size: .75rem;
+}
+
+/* ---------- 照片墙 ---------- */
+
+.bgm-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: var(--bgm-gap);
+}
+
+.bgm-card {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    border-radius: var(--bgm-radius);
+    background: var(--bgm-surface);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .08);
+    color: #fff;
+    aspect-ratio: 2 / 3;
+    transition: transform .25s ease, box-shadow .25s ease;
+
+    /* 不分页时一屏有几百张卡片，让浏览器跳过屏幕外的渲染 */
+    content-visibility: auto;
+    contain-intrinsic-size: 150px 225px;
+}
+
+.bgm-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, .22);
+}
+
+.bgm-thumb {
+    position: absolute;
+    inset: 0;
+    display: block;
+}
+
+/* 没有封面时的占位，同时也是图片加载完成前的骨架 */
+.bgm-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: linear-gradient(135deg, #4a4a4a, #2c2c2c);
+    color: #fff;
+    font-size: .8rem;
+    line-height: 1.4;
+    text-align: center;
+    word-break: break-word;
+}
+
+.bgm-cover {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .45s ease;
+}
+
+.bgm-card:hover .bgm-cover {
+    transform: scale(1.06);
+}
+
+.bgm-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: .3rem;
+    padding: .7rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, .88) 0%, rgba(0, 0, 0, .45) 45%, rgba(0, 0, 0, 0) 75%);
+    opacity: 0;
+    transition: opacity .25s ease;
+}
+
+.bgm-card:hover .bgm-overlay,
+.bgm-card:focus .bgm-overlay {
+    opacity: 1;
+}
+
+.bgm-name {
+    color: #fff;
+    font-size: .85rem;
+    font-weight: 600;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.bgm-sub {
+    color: rgba(255, 255, 255, .72);
+    font-size: .72rem;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.bgm-progress {
+    display: block;
+    height: 3px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .3);
+    overflow: hidden;
+}
+
+.bgm-progress span {
+    display: block;
+    height: 100%;
+    background: var(--bgm-accent);
+}
+
+/* ---------- 角标 ---------- */
+
+.bgm-badge {
+    position: absolute;
+    z-index: 2;
+    padding: .1rem .45rem;
+    border-radius: 6px;
+    font-size: .68rem;
+    line-height: 1.6;
+    color: #fff;
+    backdrop-filter: blur(4px);
+}
+
+.bgm-badge--type {
+    top: .5rem;
+    left: .5rem;
+}
+
+.bgm-badge--score {
+    top: .5rem;
+    right: .5rem;
+    background: rgba(0, 0, 0, .55);
+}
+
+.bgm-badge--doing { background: rgba(25, 135, 84, .88); }
+.bgm-badge--wish { background: rgba(13, 110, 253, .88); }
+.bgm-badge--done { background: rgba(108, 117, 125, .88); }
+.bgm-badge--onhold { background: rgba(255, 193, 7, .92); color: #3a2c00; }
+.bgm-badge--dropped { background: rgba(220, 53, 69, .88); }
+
+/* ---------- 空状态 ---------- */
+
+.bgm-empty {
+    padding: 3rem 1rem;
+    border: 1px dashed var(--bgm-border);
+    border-radius: var(--bgm-radius);
+    color: var(--bgm-muted);
+    text-align: center;
+}
+
+@media (max-width: 575px) {
+    .bgm-grid {
+        grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+        --bgm-gap: 10px;
+    }
+
+    .bgm-filter {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    /* 特异性要和上面 .bgm-page .bgm-search 那条对齐，否则窄屏压不住 */
+    .bgm-page .bgm-search {
+        width: 100%;
+    }
+}
