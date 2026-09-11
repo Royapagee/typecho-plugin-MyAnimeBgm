@@ -1,0 +1,6 @@
+# 图片缓存是运行时生成的，不纳入版本管理
+*.jpg
+*.tmp
+!.gitignore
+!index.html
+!.htaccess
